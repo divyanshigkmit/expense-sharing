@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model, Sequelize
-} = require('sequelize');
+"use strict";
+const { Model, Sequelize } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -11,43 +9,46 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       this.hasMany(models.FriendList, {
-        foreignKey: 'friend_one',
-        as: 'friend_one'
+        foreignKey: "friend_one",
+        as: "friendOne",
       });
       this.hasMany(models.FriendList, {
-        foreignKey: 'friend_two',
-        as: 'friend_two'
+        foreignKey: "friend_two",
+        as: "friendTwo",
       });
     }
   }
-  User.init({
-    first_name: {
-      type: Sequelize.STRING,
-      allowNull: false
+  User.init(
+    {
+      first_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      last_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      password: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      google_id: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        unique: true,
+      },
     },
-    last_name: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    email: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      unique: true
-    },
-    password: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    google_id: {
-      type: Sequelize.STRING,
-      allowNull: true,
-      unique: true
-    },
-  }, {
-    sequelize,
-    paranoid: true,
-    tableName: 'user',
-    modelName: 'User',
-  });
+    {
+      sequelize,
+      paranoid: true,
+      tableName: "user",
+      modelName: "User",
+    }
+  );
   return User;
 };
