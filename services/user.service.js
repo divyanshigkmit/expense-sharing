@@ -27,6 +27,7 @@ const userLogin = async (payload) => {
     where: {
       email: email,
     },
+    attributes: ["id", "email", "password"],
   });
 
   if (!user) {
@@ -88,6 +89,7 @@ const forgetPassword = async (payload) => {
     where: {
       email: email,
     },
+    attributes: ["id"],
   });
 
   if (!user) {
@@ -116,7 +118,10 @@ const resetPassword = async (payload, params) => {
     throw new Error("Invalid Reset Link");
   }
 
-  const userExist = await models.User.findOne({ where: { id: cachedUserId } });
+  const userExist = await models.User.findOne({
+    where: { id: cachedUserId },
+    attributes: ["email"],
+  });
   if (!userExist) {
     throw new Error("User Not Found");
   }
@@ -137,6 +142,7 @@ const updateUser = async (userData, payload) => {
     where: {
       email: userData.email,
     },
+    attributes: ["id"],
   });
 
   if (!user) {
@@ -156,6 +162,7 @@ const deleteUser = async (userData) => {
     where: {
       id: userData.id,
     },
+    attributes: ["id"],
   });
 
   if (!user) {
@@ -178,6 +185,7 @@ const userLogout = async (userData) => {
     where: {
       id: userId,
     },
+    attributes: ["id"],
   });
   if (!user) throw new Error("User not found!");
   let key = userId + "-refresh-token";

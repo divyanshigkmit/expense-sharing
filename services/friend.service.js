@@ -39,7 +39,7 @@ const addFriend = async (payload, userData) => {
 const addExpense = async (payload, userData) => {
   let { payeeId, payerId, baseAmount, splitType, payerAmount } = payload;
   let amountToPay;
-
+  if (payeeId === payerId) throw new Error("Invalid Operation");
   if (!(payeeId === userData.id || payerId === userData.id))
     throw new Error("Access Denied!");
 
@@ -95,7 +95,7 @@ const addExpense = async (payload, userData) => {
       },
       { transaction: t }
     );
-
+      
     await t.commit();
     return {
       expense,

@@ -160,6 +160,19 @@ const settleTransaction = async (req, res, next) => {
   }
 };
 
+const groupMembers = async (req, res, next) => {
+  try {
+    const { params } = req;
+    const data = await groupService.groupMembers(params);
+    res.data = data;
+    next();
+  } catch (error) {
+    console.log("-----", error);
+    console.log("getModalFieldData error:", error);
+    commonErrorHandler(req, res, error.message, 400, error);
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
@@ -173,4 +186,5 @@ module.exports = {
   overallExpenseOfCurrentUserAtGroups,
   overallExpenseOfCurrentUserAtGroup,
   settleTransaction,
+  groupMembers,
 };

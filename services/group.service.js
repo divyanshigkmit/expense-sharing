@@ -168,15 +168,16 @@ const addMember = async (payload, userData) => {
 };
 
 const addExpense = async (payload) => {
-  let { groupId, baseAmount, splitType, payeeId, member, payerAmount } =
-    payload;
-  let amountToPay;
+  let { groupId, baseAmount, splitType, payeeId, payerDetails } = payload;
   let existingGroup = await models.Group.findOne({
     where: {
       id: groupId,
     },
   });
   if (!existingGroup) throw new Error("Group not found!");
+
+  // let amountToPay;
+
   let expense,
     transactions = [];
   const t = await sequelize.transaction();
@@ -191,36 +192,60 @@ const addExpense = async (payload) => {
       { transaction: t }
     );
     if (splitType === "equally") {
-      amountToPay = baseAmount / (member.length + 1);
-      for (const element of member) {
-        transaction = await models.Transaction.create(
-          {
-            expenseId: expense.dataValues.id,
-            payeeId: payeeId,
-            payerId: element,
-            amountToPay: amountToPay,
-          },
-          { transaction: t }
-        );
+      amountToPay = baseAmount / payerDetails.length;
+
+      for (const payer of payerDetails) {
+        if (payeeId !== payer.member) {
+          transaction = await models.Transaction.create(
+            {
+              expenseId: expense.dataValues.id,
+              payeeId: payeeId,
+              payerId: payer.member,
+              amountToPay: amountToPay,
+            },
+            { transaction: t }
+          );
+        } else {
+          transaction = {
+            dataValues: {
+              payeeId: payeeId,
+              payerId: payeeId,
+              amountToPay: amountToPay,
+            },
+          };
+        }
         transactions.push(transaction);
       }
     } else if (splitType === "unequally") {
-      let i = 0;
-      for (const element of member) {
-        transaction = await models.Transaction.create(
-          {
-            expenseId: expense.dataValues.id,
+      let totalAmount = 0;
+      for (const payer of payerDetails) {
+        totalAmount += payer.amountToPay;
+      }
+      if (totalAmount !== baseAmount) throw new Error("Amount not balanced");
+
+      for (const payer of payerDetails) {
+        if (payeeId !== payer.member) {
+          transaction = await models.Transaction.create(
+            {
+              expenseId: expense.dataValues.id,
+              payeeId: payeeId,
+              payerId: payer.member,
+              amountToPay: payer.amountToPay,
+            },
+            { transaction: t }
+          );
+        } else {
+          transaction = {
             payeeId: payeeId,
-            payerId: element,
-            amountToPay: payerAmount[i],
-          },
-          { transaction: t }
-        );
+            payerId: payeeId,
+            amountToPay: payer.amountToPay,
+          };
+        }
         transactions.push(transaction);
-        i++;
       }
     }
     await t.commit();
+    console.log(expense, transactions);
     return {
       expense,
       transactions,
@@ -527,14 +552,31 @@ const settleTransaction = async (params) => {
     ],
   });
   if (!existingTransaction) throw new Error("Treansaction not found");
-  
+
   await models.Transaction.destroy({
     where: {
       id: transactionId,
     },
   });
-  
+
   return;
+};
+
+const groupMembers = async (params) => {
+  let groupId = params.id;
+
+  let groupDetails = await models.GroupUserMapping.findAll({
+    where: {
+      groupId: groupId,
+    },
+    include: [
+      {
+        model: models.User,
+        as: "user",
+      },
+    ],
+  });
+  return groupDetails;
 };
 
 module.exports = {
@@ -550,4 +592,5 @@ module.exports = {
   overallExpenseOfCurrentUserAtGroups,
   overallExpenseOfCurrentUserAtGroup,
   settleTransaction,
+  groupMembers,
 };

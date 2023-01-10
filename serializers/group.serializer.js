@@ -60,11 +60,10 @@ const addExpenseData = (req, res, next) => {
     let transactions = [];
     reciveData.transactions.forEach((element) => {
       let transaction = {
-        id: element.dataValues.id,
+        id: element.dataValues.id || undefined,
         payeeId: element.dataValues.payeeId,
         payerId: element.dataValues.payeeId,
         amountToPay: element.dataValues.amountToPay,
-        isSettle: element.dataValues.isSettle,
       };
       transactions.push(transaction);
     });
@@ -88,7 +87,9 @@ const expenseDetailData = (req, res, next) => {
       baseAmount: reciveData.dataValues.baseAmount,
       splitType: reciveData.dataValues.splitType,
     };
+    let totalAmount = 0;
     reciveData.dataValues.transactions.forEach((transaction) => {
+      totalAmount += transaction.amountToPay;
       transactions.push({
         id: transaction.id,
         payeeId: transaction.payeeId,
@@ -96,6 +97,14 @@ const expenseDetailData = (req, res, next) => {
         amountToPay: transaction.amountToPay,
       });
     });
+    let amount = reciveData.dataValues.baseAmount - totalAmount;
+    if (amount) {
+      transactions.push({
+        payeeId: reciveData.dataValues.transactions[0].payeeId,
+        payerId: reciveData.dataValues.transactions[0].payeeId,
+        amountToPay: amount,
+      });
+    }
     expense.transactions = transactions;
     resultData = {
       expense,

@@ -29,7 +29,7 @@ router.post(
 router.post(
   "/expense",
   checkAccessToken,
-  groupValidator.addExpenseSchema,
+  // groupValidator.addExpenseSchema,
   groupController.addExpense,
   groupSerializer.addExpenseData,
   genericResponse.sendResponse
@@ -104,6 +104,13 @@ router.delete(
   checkAccessToken,
   groupValidator.settleTransactionValidate,
   groupController.settleTransaction,
+  genericResponse.sendResponse
+);
+
+router.get(
+  "/member-details/:id",
+  checkAccessToken,
+  groupController.groupMembers,
   genericResponse.sendResponse
 );
 
