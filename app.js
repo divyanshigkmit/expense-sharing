@@ -18,8 +18,12 @@ app.use(helmet());
 // Enable gzip compression module for REST API
 app.use(compression());
 
-app.use('/health', (_req, res) => {
-    res.send({ message: 'Application runing successfully!' });
+app.use("/health", (req, res) => {
+  // console.log(req.socket.remoteAddress);
+  res.send({
+    message: "Application runing successfully!",
+    ip: req.socket.remoteAddress,
+  });
 });
 
 // REST API entry point
